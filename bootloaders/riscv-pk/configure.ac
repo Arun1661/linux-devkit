@@ -78,7 +78,7 @@ AC_ARG_VAR(RISCV, [top-level RISC-V install directory])
 # Set compiler flags
 #-------------------------------------------------------------------------
 
-default_CFLAGS="-Wall -Werror -D__NO_INLINE__ -mcmodel=medany -O2 -std=gnu99 -Wno-unused -Wno-attributes -fno-delete-null-pointer-checks"
+default_CFLAGS="-Wall -Werror -D__NO_INLINE__ -mcmodel=medany -O2 -std=gnu99 -Wno-unused -Wno-attributes -fno-delete-null-pointer-checks -Wno-error=maybe-uninitialized"
 
 
 AC_ARG_WITH([target-isa],

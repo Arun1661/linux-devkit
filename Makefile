@@ -85,13 +85,12 @@ btarget := riscv64-unknown-elf-
 	@echo "Generated BBL for a core of $(ISA) with  $(ABI)"
 
 $(buildroot_initramfs_wrkdir)/.config: $(buildroot_srcdir)
-	rm -rf $(dir $@)
 	mkdir -p $(dir $@)
 	cp $(buildroot_initramfs_config) $@
-	$(MAKE) -C $< RISCV=$(RISCV) PATH=$(PATH) O=$(buildroot_initramfs_wrkdir) olddefconfig
+	make -C $< RISCV=$(RISCV) PATH=$(PATH) O=$(buildroot_initramfs_wrkdir) BR2_EXTERNAL= olddefconfig
 
 $(buildroot_initramfs_tar): $(buildroot_srcdir) $(buildroot_initramfs_wrkdir)/.config $(RISCV)/bin/$(target)-gcc $(buildroot_initramfs_config)
-	$(MAKE) -C $< RISCV=$(RISCV) PATH=$(PATH) O=$(buildroot_initramfs_wrkdir)
+	make -C $< RISCV=$(RISCV) PATH=$(PATH) O=$(buildroot_initramfs_wrkdir) BR2_EXTERNAL=
 
 .PHONY: buildroot_initramfs-menuconfig
 buildroot_initramfs-menuconfig: $(buildroot_initramfs_wrkdir)/.config $(buildroot_srcdir)
@@ -100,13 +99,12 @@ buildroot_initramfs-menuconfig: $(buildroot_initramfs_wrkdir)/.config $(buildroo
 	cp $(dir $<)/defconfig conf/buildroot_initramfs_config
 
 $(buildroot_rootfs_wrkdir)/.config: $(buildroot_srcdir)
-	rm -rf $(dir $@)
 	mkdir -p $(dir $@)
 	cp $(buildroot_rootfs_config) $@
-	$(MAKE) -C $< RISCV=$(RISCV) PATH=$(PATH) O=$(buildroot_rootfs_wrkdir) olddefconfig
+	make -C $< RISCV=$(RISCV) PATH=$(PATH) O=$(buildroot_rootfs_wrkdir) BR2_EXTERNAL= olddefconfig
 
 $(buildroot_rootfs_ext): $(buildroot_srcdir) $(buildroot_rootfs_wrkdir)/.config $(RISCV)/bin/$(target)-gcc $(buildroot_rootfs_config)
-	$(MAKE) -C $< RISCV=$(RISCV) PATH=$(PATH) O=$(buildroot_rootfs_wrkdir)
+	make -C $< RISCV=$(RISCV) PATH=$(PATH) O=$(buildroot_rootfs_wrkdir) BR2_EXTERNAL=
 
 .PHONY: buildroot_rootfs-menuconfig
 buildroot_rootfs-menuconfig: $(buildroot_rootfs_wrkdir)/.config $(buildroot_srcdir)
@@ -137,11 +135,14 @@ endif
 
 $(vmlinux): $(linux_srcdir) $(linux_wrkdir)/.config $(buildroot_initramfs_sysroot_stamp)
 	$(MAKE) -C $< O=$(linux_wrkdir) \
-		CROSS_COMPILE=$(RISCV)/bin/riscv64-unknown-linux-gnu- \
+		CROSS_COMPILE=riscv64-linux-gnu- \
 		CONFIG_INITRAMFS_SOURCE="$(confdir)/initramfs.txt $(buildroot_initramfs_sysroot)" \
 		CONFIG_INITRAMFS_ROOT_UID=$(shell id -u) \
 		CONFIG_INITRAMFS_ROOT_GID=$(shell id -g) \
 		ARCH=riscv \
+		HOSTCFLAGS=-fcommon \
+		KCFLAGS=-misa-spec=2.2 \
+		KAFLAGS=-misa-spec=2.2 \
 		vmlinux
 
 $(vmlinux_stripped): $(vmlinux)
